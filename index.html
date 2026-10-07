@@ -12,7 +12,7 @@
     <meta name="description" content="Testez vos connaissances en mycologie avec MycoQuiz. Identifiez les champignons à partir de leurs photos !">
 
     <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3VME97CP93"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
@@ -209,9 +209,13 @@
 
             <!-- End View -->
             <div id="end-view" class="hidden flex-col items-center justify-center py-20 px-4 text-center">
-                <div class="text-6xl mb-6">🏆</div>
+                <div id="end-icon" class="text-6xl mb-6">🏆</div>
                 <h2 class="text-3xl font-bold text-slate-900 mb-2">Quiz Terminé !</h2>
-                <p class="text-slate-600 mb-8 text-lg">Votre score final : <span id="final-score" class="font-bold text-blue-600 text-2xl"></span></p>
+                <p class="text-slate-600 mb-4 text-lg">Votre score final : <span id="final-score" class="font-bold text-blue-600 text-2xl"></span></p>
+                
+                <!-- Nouveau message personnalisé -->
+                <p id="custom-message" class="text-lg font-medium mb-8"></p>
+                
                 <button onclick="initQuiz()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl shadow-sm transition-all transform hover:scale-105">
                     Recommencer la série
                 </button>
@@ -524,7 +528,23 @@
             const endScreen = document.getElementById('end-view');
             endScreen.classList.remove('hidden');
             endScreen.classList.add('flex');
+            
             document.getElementById('final-score').innerText = `${score} / ${currentDB.length}`;
+            
+            // Gestion du message personnalisé
+            const messageEl = document.getElementById('custom-message');
+            const iconEl = document.getElementById('end-icon');
+            
+            // Si le score est strictement supérieur à la moyenne
+            if (score > currentDB.length / 2) {
+                messageEl.innerText = "Bravo, tu vas me devoir une bière ! 🍻";
+                messageEl.className = "text-xl font-bold text-emerald-600 mb-8";
+                iconEl.innerText = "🏆";
+            } else {
+                messageEl.innerText = "Allez, on ne lâche rien ! Encore un petit essai pour avoir la moyenne ! 💪";
+                messageEl.className = "text-xl font-medium text-amber-600 mb-8";
+                iconEl.innerText = "🍄";
+            }
         }
 
         // Global Event Listener pour la touche Entrée
