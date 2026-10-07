@@ -4,6 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MycoQuiz</title>
+    
+    <!-- Icône de l'onglet (favicon) -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍄</text></svg>">
+    
+    <!-- Description pour les partages de liens -->
+    <meta name="description" content="Testez vos connaissances en mycologie avec MycoQuiz. Identifiez les champignons à partir de leurs photos !">
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-XXXXXXXXXX');
+    </script>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -165,26 +182,29 @@
                     </div>
                 </div>
 
-                <div class="flex flex-col gap-2 relative">
-                    <label for="answer-input" class="text-sm font-semibold text-slate-700">Nom Latin du champignon :</label>
-                    <input type="text" id="answer-input" 
-                        class="w-full px-4 py-3 text-lg font-medium text-slate-900 bg-slate-50 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white transition-all placeholder-slate-400" 
-                        placeholder="Ex: Boletus edulis..."
-                        autocomplete="off" spellcheck="false" autocorrect="off">
-                    
-                    <!-- Feedback message -->
-                    <div id="feedback-message" class="text-sm font-medium min-h-[24px] mt-1 pl-1"></div>
-                </div>
+                <!-- Formulaire englobant pour améliorer l'expérience clavier mobile -->
+                <form onsubmit="event.preventDefault();" class="flex flex-col gap-2 relative w-full">
+                    <div class="flex flex-col gap-2 relative">
+                        <label for="answer-input" class="text-sm font-semibold text-slate-700">Nom Latin du champignon :</label>
+                        <input type="text" id="answer-input" 
+                            class="w-full px-4 py-3 text-lg font-medium text-slate-900 bg-slate-50 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white transition-all placeholder-slate-400" 
+                            placeholder="Ex: Boletus edulis..."
+                            autocomplete="off" spellcheck="false" autocorrect="off">
+                        
+                        <!-- Feedback message -->
+                        <div id="feedback-message" class="text-sm font-medium min-h-[24px] mt-1 pl-1"></div>
+                    </div>
 
-                <!-- Actions -->
-                <div class="mt-4 flex gap-3">
-                    <button id="btn-verify" onclick="verifyAnswer()" class="flex-1 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold py-3.5 px-4 rounded-xl shadow-sm transition-all text-center">
-                        Vérifier (Entrée)
-                    </button>
-                    <button id="btn-next" onclick="nextQuestion()" class="hidden flex-1 bg-slate-800 hover:bg-slate-900 active:bg-black text-white font-bold py-3.5 px-4 rounded-xl shadow-sm transition-all text-center">
-                        Suivant ➔ (Entrée)
-                    </button>
-                </div>
+                    <!-- Actions -->
+                    <div class="mt-4 flex gap-3">
+                        <button type="button" id="btn-verify" onclick="verifyAnswer()" class="flex-1 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold py-3.5 px-4 rounded-xl shadow-sm transition-all text-center">
+                            Vérifier (Entrée)
+                        </button>
+                        <button type="button" id="btn-next" onclick="nextQuestion()" class="hidden flex-1 bg-slate-800 hover:bg-slate-900 active:bg-black text-white font-bold py-3.5 px-4 rounded-xl shadow-sm transition-all text-center">
+                            Suivant ➔ (Entrée)
+                        </button>
+                    </div>
+                </form>
             </div>
 
             <!-- End View -->
@@ -426,19 +446,27 @@
             document.getElementById('img-1').classList.remove('hidden');
             document.getElementById('img-2').classList.remove('hidden');
             
-            // Auto focus
-            setTimeout(() => inputEl.focus(), 50);
+            // Auto focus conditionnel (uniquement sur écrans larges pour éviter le clavier virtuel intempestif)
+            setTimeout(() => {
+                if (window.innerWidth > 768) {
+                    inputEl.focus();
+                }
+            }, 50);
         }
 
         function revealImage() {
             document.getElementById('overlay-2').classList.add('hidden-overlay');
-            document.getElementById('answer-input').focus();
+            if (window.innerWidth > 768) {
+                document.getElementById('answer-input').focus();
+            }
         }
 
         function toggleHint() {
             const hint = document.getElementById('hint-content');
             hint.classList.toggle('hidden');
-            document.getElementById('answer-input').focus();
+            if (window.innerWidth > 768) {
+                document.getElementById('answer-input').focus();
+            }
         }
 
         function verifyAnswer() {
@@ -480,6 +508,8 @@
             document.getElementById('btn-verify').classList.add('hidden');
             const btnNext = document.getElementById('btn-next');
             btnNext.classList.remove('hidden');
+            
+            // On met le focus sur le bouton "Suivant" pour permettre l'appui sur Entrée
             btnNext.focus();
         }
 
