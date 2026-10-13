@@ -151,7 +151,7 @@
             </div>
 
             <!-- ============================================== -->
-            <!-- VUE 1 : CLASSIQUE (Ton code d'origine amélioré)-->
+            <!-- VUE 1 : CLASSIQUE                              -->
             <!-- ============================================== -->
             <div id="view-classique" class="hidden p-4 sm:p-6">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
@@ -227,7 +227,7 @@
                     </div>
                 </div>
 
-                <!-- Panneau de réponse (Caché initialement) -->
+                <!-- Panneau de réponse -->
                 <div id="paires-result-panel" class="hidden flex-col items-center bg-myco-50 border border-myco-200 rounded-xl p-5 mb-4 text-center">
                     <h3 id="paires-result-title" class="text-xl font-bold mb-2"></h3>
                     <p id="paires-hint" class="text-myco-800 font-medium"></p>
@@ -242,7 +242,7 @@
             <div id="view-end" class="hidden flex-grow flex-col items-center justify-center py-20 px-4 text-center bg-white">
                 <div id="end-icon" class="text-7xl mb-6 drop-shadow-md">🏆</div>
                 <h2 class="text-3xl font-bold text-myco-900 mb-2">Session Terminée !</h2>
-                <p class="text-slate-600 mb-4 text-lg">Votre score : <span id="final-score" class="font-bold text-orange-600 text-2xl"></span></p>
+                <p class="text-slate-600 mb-4 text-lg">Votre score final : <span id="final-score" class="font-bold text-orange-600 text-2xl"></span></p>
                 <p id="custom-message" class="text-lg font-medium mb-8 max-w-md mx-auto"></p>
                 <button onclick="startSession()" class="bg-myco-900 hover:bg-black text-white font-bold py-4 px-8 rounded-xl shadow-md transition-all transform hover:scale-105">
                     🔄 Recommencer
@@ -255,7 +255,7 @@
     <!-- LES DONNÉES ET LA LOGIQUE JS -->
     <script>
         // ------------------------------------------------------------------
-        // BASES DE DONNÉES
+        // BASES DE DONNÉES COMPLÈTES
         // ------------------------------------------------------------------
         const db_s1s2 = [
             { l: "Chlorociboria aeruginascens", syn: ["chlorociboria aeruginascens"], c: "Pézize turquoise" },
@@ -265,31 +265,78 @@
             { l: "Ganoderma lucidum", syn: ["ganoderma lucidum"], c: "Ganoderme luisant" },
             { l: "Piptoporus betulinus", syn: ["piptoporus betulinus", "fomitopsis betulina"], c: "Polypore du bouleau" },
             { l: "Fomes fomentarius", syn: ["fomes fomentarius"], c: "Amadouvier" },
+            { l: "Phaeolus schweinitzii", syn: ["phaeolus schweinitzii"], c: "Polypore du teinturier" },
+            { l: "Polyporus tuberaster", syn: ["polyporus tuberaster"], c: "Polypore moucheté" },
+            { l: "Sparassis crispa", syn: ["sparassis crispa"], c: "Sparassis crépu" },
+            { l: "Fistulina hepatica", syn: ["fistulina hepatica"], c: "Langue de boeuf" },
+            { l: "Russula lepida", syn: ["russula lepida", "russula rosea"], c: "Russule jolie" },
+            { l: "Lactarius controversus", syn: ["lactarius controversus"], c: "Lactaire des peupliers" },
+            { l: "Lactarius deliciosus", syn: ["lactarius deliciosus"], c: "Lactaire délicieux" },
+            { l: "Pleurotus dryinus", syn: ["pleurotus dryinus"], c: "Pleurote voilé" },
+            { l: "Armillaria tabescens", syn: ["armillaria tabescens", "desarmillaria tabescens"], c: "Armillaire sans anneau" },
+            { l: "Hygrophorus cossus", syn: ["hygrophorus cossus"], c: "Hygrophore à odeur de chenille" },
+            { l: "Rhodocollybia butyracea", syn: ["rhodocollybia butyracea", "collybia butyracea"], c: "Collybie beurrée" },
+            { l: "Gymnopus dryophilus", syn: ["gymnopus dryophilus", "collybia dryophila"], c: "Collybie des chênes" },
+            { l: "Gymnopus fusipes", syn: ["gymnopus fusipes", "collybia fusipes"], c: "Collybie à pied en fuseau" },
+            { l: "Megacollybia platyphylla", syn: ["megacollybia platyphylla", "collybia platyphylla"], c: "Collybie à larges lames" },
             { l: "Macrolepiota procera", syn: ["macrolepiota procera"], c: "Coulemelle" },
             { l: "Chlorophyllum brunneum", syn: ["chlorophyllum brunneum", "macrolepiota brunnea"], c: "Lépiote déguenillée" },
             { l: "Agaricus campestris", syn: ["agaricus campestris"], c: "Rosé des prés" },
+            { l: "Agaricus bresadolanus", syn: ["agaricus bresadolanus"], c: "Agaric radicant" },
+            { l: "Parasola plicatilis", syn: ["parasola plicatilis", "coprinus plicatilis"], c: "Coprin plissé" },
+            { l: "Pluteus cervinus", syn: ["pluteus cervinus"], c: "Plutée couleur de cerf" },
             { l: "Amanita phalloides", syn: ["amanita phalloides"], c: "Amanite phalloïde" },
+            { l: "Amanita ovoidea", syn: ["amanita ovoidea"], c: "Oronge blanche" },
             { l: "Amanita citrina", syn: ["amanita citrina"], c: "Amanite citrine" },
             { l: "Amanita rubescens", syn: ["amanita rubescens"], c: "Amanite rougissante" },
+            { l: "Amanita excelsa", syn: ["amanita excelsa", "amanita spissa"], c: "Amanite épaisse" },
             { l: "Amanita muscaria", syn: ["amanita muscaria"], c: "Amanite tue-mouches" },
+            { l: "Amanita pantherina", syn: ["amanita pantherina"], c: "Amanite panthère" },
+            { l: "Amanita caesarea", syn: ["amanita caesarea"], c: "Amanite des Césars" },
+            { l: "Entoloma rhodopolium", syn: ["entoloma rhodopolium"], c: "Entolome à odeur d'eau de javel" },
+            { l: "Clitopilus prunulus", syn: ["clitopilus prunulus"], c: "Meunier" },
+            { l: "Hebeloma crustuliniforme", syn: ["hebeloma crustuliniforme"], c: "Hébélome échaudé" },
+            { l: "Caloboletus radicans", syn: ["caloboletus radicans", "boletus radicans"], c: "Bolet radicant" },
             { l: "Neoboletus erythropus", syn: ["neoboletus erythropus", "boletus erythropus"], c: "Bolet à pied rouge" },
+            { l: "Suillellus luridus", syn: ["suillellus luridus", "boletus luridus"], c: "Bolet blafard" },
             { l: "Rubroboletus satanas", syn: ["rubroboletus satanas", "boletus satanas"], c: "Bolet Satan" },
-            // ... (Ajoute le reste de tes champignons S1S2 ici)
+            { l: "Leccinellum crocipodium", syn: ["leccinellum crocipodium", "leccinum crocipodium"], c: "Bolet craquelé" },
+            { l: "Xerocomus subtomentosus", syn: ["xerocomus subtomentosus", "boletus subtomentosus"], c: "Bolet subtomenteux" },
+            { l: "Suillus collinitus", syn: ["suillus collinitus"], c: "Bolet à base rose" },
+            { l: "Suillus granulatus", syn: ["suillus granulatus"], c: "Bolet granulé" }
         ];
 
         const db_s3 = [
             { l: "Craterellus cornucopioides", syn: ["craterellus cornucopioides"], c: "Trompette de la mort" },
             { l: "Hydnum repandum", syn: ["hydnum repandum"], c: "Pied-de-mouton" },
-            { l: "Clitocybe nebularis", syn: ["clitocybe nebularis", "lepista nebularis"], c: "Clitocybe nébuleux" },
-            { l: "Laccaria amethystina", syn: ["laccaria amethystina"], c: "Laccaire améthyste" },
-            { l: "Mycena pura", syn: ["mycena pura"], c: "Mycène pure" },
-            { l: "Agaricus xanthodermus", syn: ["agaricus xanthodermus"], c: "Agaric jaunissant" },
-            { l: "Entoloma lividum", syn: ["entoloma lividum", "entoloma sinuatum"], c: "Entolome livide" },
-            { l: "Boletus edulis", syn: ["boletus edulis"], c: "Cèpe de Bordeaux" },
-            { l: "Phallus impudicus", syn: ["phallus impudicus"], c: "Satyre puant" },
             { l: "Russula cyanoxantha", syn: ["russula cyanoxantha"], c: "Russule charbonnière" },
-            { l: "Russula lepida", syn: ["russula lepida", "russula rosea"], c: "Russule jolie" }
-            // ... (Ajoute le reste de tes champignons S3 ici)
+            { l: "Russula amara", syn: ["russula amara"], c: "Russule mamelonnée" },
+            { l: "Clitocybe nebularis", syn: ["clitocybe nebularis", "lepista nebularis"], c: "Clitocybe nébuleux" },
+            { l: "Clitocybe odora", syn: ["clitocybe odora"], c: "Clitocybe odorant" },
+            { l: "Tricholoma terreum", syn: ["tricholoma terreum"], c: "Tricholome terreux" },
+            { l: "Tricholoma sulphureum", syn: ["tricholoma sulphureum"], c: "Tricholome soufré" },
+            { l: "Mycena pura", syn: ["mycena pura"], c: "Mycène pure" },
+            { l: "Mycena rosea", syn: ["mycena rosea"], c: "Mycène rose" },
+            { l: "Laccaria amethystina", syn: ["laccaria amethystina"], c: "Laccaire améthyste" },
+            { l: "Laccaria laccata", syn: ["laccaria laccata"], c: "Laccaire laqué" },
+            { l: "Agaricus xanthodermus", syn: ["agaricus xanthodermus", "agaricus xanthoderma"], c: "Agaric jaunissant" },
+            { l: "Coprinopsis atramentaria", syn: ["coprinopsis atramentaria", "coprinus atramentarius"], c: "Coprin noir d'encre" },
+            { l: "Coprinus picaceus", syn: ["coprinus picaceus", "coprinopsis picacea"], c: "Coprin pie" },
+            { l: "Entoloma lividum", syn: ["entoloma lividum", "entoloma sinuatum"], c: "Entolome livide" },
+            { l: "Inocybe fastigiata", syn: ["inocybe fastigiata", "inocybe rimosa"], c: "Inocybe fastigié" },
+            { l: "Cortinarius violaceus", syn: ["cortinarius violaceus"], c: "Cortinaire violet" },
+            { l: "Cortinarius orellanus", syn: ["cortinarius orellanus"], c: "Cortinaire couleur de rocou" },
+            { l: "Hypholoma fasciculare", syn: ["hypholoma fasciculare"], c: "Hypholome en touffe" },
+            { l: "Kuehneromyces mutabilis", syn: ["kuehneromyces mutabilis"], c: "Pholiote changeante" },
+            { l: "Galerina marginata", syn: ["galerina marginata"], c: "Galère marginée" },
+            { l: "Hygrophoropsis aurantiaca", syn: ["hygrophoropsis aurantiaca"], c: "Fausse girolle" },
+            { l: "Paxillus involutus", syn: ["paxillus involutus"], c: "Paxille enroulé" },
+            { l: "Boletus edulis", syn: ["boletus edulis"], c: "Cèpe de Bordeaux" },
+            { l: "Scleroderma citrinum", syn: ["scleroderma citrinum", "scleroderma citrina"], c: "Scléroderme commun" },
+            { l: "Lycoperdon perlatum", syn: ["lycoperdon perlatum"], c: "Vesse-de-loup perlée" },
+            { l: "Ramaria stricta", syn: ["ramaria stricta"], c: "Clavaire dressée" },
+            { l: "Clathrus archeri", syn: ["clathrus archeri"], c: "Anthurus d'Archer" },
+            { l: "Phallus impudicus", syn: ["phallus impudicus"], c: "Satyre puant" }
         ];
 
         // Base de données spéciale pour les Paires Confuses
@@ -300,7 +347,10 @@
             { l1: "Clitocybe nebularis", c1: "Clitocybe nébuleux", l2: "Entoloma lividum", c2: "Entolome livide", hint: "☠️ L'Entolome livide (très toxique) a des lames jaunâtres puis roses, jamais blanches ou crèmes comme le nébuleux." },
             { l1: "Agaricus campestris", c1: "Rosé des prés", l2: "Agaricus xanthodermus", c2: "Agaric jaunissant", hint: "L'agaric jaunissant jaunit intensément si on gratte la base de son pied, et dégage une odeur d'iode/encre." },
             { l1: "Laccaria amethystina", c1: "Laccaire améthyste", l2: "Mycena pura", c2: "Mycène pure", hint: "La Mycène pure sent fortement le radis. Le Laccaire a des lames plus espacées et très violettes, couvertes de poudre blanche (spores) à maturité." },
-            { l1: "Russula cyanoxantha", c1: "Russule charbonnière", l2: "Russula lepida", c2: "Russule jolie", hint: "La charbonnière a des lames lardacées (qui ne cassent pas sous le doigt). La jolie a un pied très dur, souvent lavé de rose." }
+            { l1: "Russula cyanoxantha", c1: "Russule charbonnière", l2: "Russula lepida", c2: "Russule jolie", hint: "La charbonnière a des lames lardacées (qui ne cassent pas sous le doigt). La jolie a un pied très dur, souvent lavé de rose." },
+            { l1: "Boletus edulis", c1: "Cèpe de Bordeaux", l2: "Tylopilus felleus", c2: "Bolet de fiel", hint: "Le Bolet de fiel a des pores qui rosissent à maturité et un réseau sombre sur le pied (le Cèpe a un réseau blanc sur fond clair)." },
+            { l1: "Hydnum repandum", c1: "Pied-de-mouton", l2: "Hydnum rufescens", c2: "Pied-de-mouton roux", hint: "Le roux est plus petit, de couleur plus orangée, et ses aiguillons ne sont pas décurrents (ils ne descendent pas sur le pied)." },
+            { l1: "Cantharellus cibarius", c1: "Girolle", l2: "Omphalotus illudens", c2: "Pleurote de l'olivier", hint: "☠️ Le pleurote de l'olivier pousse en touffes sur le bois (la girolle est au sol) et possède de vraies lames." }
         ];
 
         // ------------------------------------------------------------------
@@ -408,7 +458,15 @@
 
         function startSession() {
             const db = getActiveDB();
-            currentQuestions = shuffleArray([...Array(db.length).keys()]);
+            let shuffled = shuffleArray([...Array(db.length).keys()]);
+            
+            // Limiter à 10 questions si on est dans le mode paires
+            if (currentMode === 'paires') {
+                currentQuestions = shuffled.slice(0, 10);
+            } else {
+                currentQuestions = shuffled;
+            }
+            
             currentIndex = 0;
             score = 0;
             document.getElementById('score-text').innerText = score;
@@ -554,8 +612,9 @@
             
             options.forEach((opt, idx) => {
                 const btn = document.createElement('button');
-                btn.className = "w-full text-left p-4 rounded-xl border-2 border-myco-200 bg-white hover:bg-myco-50 transition-all font-medium text-myco-900";
-                btn.innerHTML = `<span class="italic block">${opt.l}</span><span class="text-sm text-slate-500">${opt.c}</span>`;
+                btn.className = "w-full text-center p-5 rounded-xl border-2 border-myco-200 bg-white hover:bg-myco-50 transition-all font-medium text-myco-900";
+                // Modifié ici : Affichage uniquement du nom latin
+                btn.innerHTML = `<span class="italic text-lg block">${opt.l}</span>`;
                 btn.onclick = () => verifySprint(idx, options, mushroom);
                 btnContainer.appendChild(btn);
             });
@@ -618,7 +677,7 @@
                     document.getElementById('sprint-feedback').innerHTML = `⚡ Rapide et précis !`;
                     document.getElementById('sprint-feedback').className = "text-center font-bold text-lg h-8 mb-4 text-green-600";
                 } else {
-                    document.getElementById('sprint-feedback').innerHTML = `❌ Trop vite !`;
+                    document.getElementById('sprint-feedback').innerHTML = `❌ Trop vite ! C'était <i>${correctMushroom.l}</i>`;
                     document.getElementById('sprint-feedback').className = "text-center font-bold text-lg h-8 mb-4 text-red-600";
                 }
             }
@@ -705,7 +764,7 @@
         }
 
         // ==========================================
-        // COMMUN
+        // COMMUN : MISE À JOUR SCORE & FIN
         // ==========================================
         function updateScore() {
             score++;
@@ -726,22 +785,23 @@
             const messageEl = document.getElementById('custom-message');
             const iconEl = document.getElementById('end-icon');
             
+            // Tes messages originaux réintégrés !
             if (score === total) {
-                messageEl.innerText = "Parfait ! Vous êtes prêt pour la forêt ! 🌲";
+                messageEl.innerText = "Score parfait ! Je mérite vraiment une bière ! 🍻🏆";
                 messageEl.className = "text-xl font-bold text-green-600 mb-8";
                 iconEl.innerText = "👑";
             } else if (score > total / 2) {
-                messageEl.innerText = "Bravo, on approche de l'expertise ! 🍻";
+                messageEl.innerText = "Bravo, tu vas me devoir une bière ! 🍻";
                 messageEl.className = "text-xl font-bold text-orange-500 mb-8";
                 iconEl.innerText = "🏆";
             } else {
-                messageEl.innerText = "Encore un peu d'entraînement, ne lâchez rien ! 💪";
+                messageEl.innerText = "Allez, on ne lâche rien ! Encore un petit essai pour avoir la moyenne ! 💪";
                 messageEl.className = "text-xl font-medium text-myco-800 mb-8";
                 iconEl.innerText = "🍄";
             }
         }
 
-        // Initialisation
+        // Initialisation au chargement de la page
         startSession();
 
     </script>
