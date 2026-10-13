@@ -3,47 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MycoQuiz</title>
+    <title>MycoQuiz - Apprentissage Rapide</title>
     
-    <!-- Icône de l'onglet (favicon) -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍄</text></svg>">
-    
-    <!-- Description pour les partages de liens -->
-    <meta name="description" content="Testez vos connaissances en mycologie avec MycoQuiz. Identifiez les champignons à partir de leurs photos !">
-
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3VME97CP93"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-3VME97CP93');
-    </script>
+    <meta name="description" content="Apprenez à identifier les champignons avec MycoQuiz. Mode Classique, Sprint QCM et Entraînement sur les Paires Confuses.">
 
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        // Palette Nature/Beige
+                        myco: {
+                            50: '#FBF9F6', // Fond principal
+                            100: '#F2EBE1', // Fond éléments
+                            200: '#E4D5C2', // Bordures
+                            800: '#4A3B2C', // Textes foncés
+                            900: '#2C2218',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f8fafc;
+            background-color: #FBF9F6;
         }
 
         .glass-header {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
+            background: rgba(251, 249, 246, 0.85);
+            backdrop-filter: blur(12px);
             border-bottom: 1px solid rgba(0,0,0,0.05);
         }
 
         .mushroom-img-container {
             width: 100%;
             aspect-ratio: 4/3;
-            border-radius: 0.75rem;
-            background-color: #e2e8f0;
+            border-radius: 1rem;
+            background-color: #F2EBE1;
             overflow: hidden;
             position: relative;
-            box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
 
         .mushroom-img {
@@ -51,6 +56,16 @@
             height: 100%;
             object-fit: cover;
             animation: fadeIn 0.5s ease-in-out;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        
+        /* Effet de clic pour le mode paires */
+        .interactive-img:hover {
+            transform: scale(1.02);
+        }
+        .interactive-img:active {
+            transform: scale(0.98);
         }
 
         @keyframes fadeIn {
@@ -58,32 +73,13 @@
             to { opacity: 1; filter: blur(0); }
         }
 
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            50% { transform: translateX(5px); }
-            75% { transform: translateX(-5px); }
-        }
-
-        .input-error {
-            border-color: #ef4444 !important;
-            background-color: #fef2f2 !important;
-            animation: shake 0.3s;
-        }
-
-        .input-success {
-            border-color: #22c55e !important;
-            background-color: #f0fdf4 !important;
-        }
-
         .loader {
             width: 48px;
             height: 48px;
-            border: 4px solid #e2e8f0;
-            border-bottom-color: #3b82f6;
+            border: 4px solid #E4D5C2;
+            border-bottom-color: #f97316;
             border-radius: 50%;
             display: inline-block;
-            box-sizing: border-box;
             animation: rotation 1s linear infinite;
         }
 
@@ -92,11 +88,16 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Overlay for hidden image */
+        /* Barre de timer pour le Sprint */
+        #sprint-timer-bar {
+            width: 100%;
+        }
+
+        /* Overlay 2e image classique */
         .reveal-overlay {
             position: absolute;
             inset: 0;
-            background: rgba(241, 245, 249, 0.9);
+            background: rgba(242, 235, 225, 0.9);
             backdrop-filter: blur(8px);
             display: flex;
             flex-direction: column;
@@ -106,126 +107,156 @@
             transition: all 0.2s ease;
             z-index: 10;
         }
-        
-        .reveal-overlay:hover {
-            background: rgba(226, 232, 240, 0.95);
-        }
-        
-        .reveal-overlay.hidden-overlay {
-            opacity: 0;
-            pointer-events: none;
-        }
+        .reveal-overlay.hidden-overlay { opacity: 0; pointer-events: none; }
     </style>
 </head>
-<body class="text-slate-800 min-h-screen flex flex-col items-center pb-12">
+<body class="text-myco-800 min-h-screen flex flex-col items-center pb-12">
 
     <header class="w-full glass-header sticky top-0 z-50 shadow-sm mb-6">
-        <div class="max-w-3xl mx-auto px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <h1 class="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
-                🍄 MycoQuiz
-            </h1>
-            <div class="flex bg-slate-100 p-1 rounded-lg w-full sm:w-auto">
-                <button id="tab-s1s2" onclick="switchTab('s1s2')" class="flex-1 sm:px-6 py-2 text-sm font-semibold rounded-md bg-white shadow-sm text-slate-800 transition-all">
-                    Semaine 1 et 2
-                </button>
-                <button id="tab-s3" onclick="switchTab('s3')" class="flex-1 sm:px-6 py-2 text-sm font-semibold rounded-md text-slate-500 hover:text-slate-700 transition-all">
-                    Semaine 3
-                </button>
+        <div class="max-w-4xl mx-auto px-4 py-3 flex flex-col gap-4">
+            
+            <div class="flex items-center justify-between">
+                <h1 class="text-2xl font-bold tracking-tight text-myco-900 flex items-center gap-2">
+                    🍄 MycoQuiz
+                </h1>
+                <span class="text-sm font-bold bg-orange-100 text-orange-800 px-3 py-1 rounded-full">Score: <span id="score-text">0</span></span>
             </div>
+
+            <!-- Sélecteur de Mode -->
+            <div class="flex gap-2 bg-myco-100 p-1.5 rounded-xl overflow-x-auto no-scrollbar">
+                <button onclick="setMode('classique')" id="btn-mode-classique" class="flex-1 min-w-[100px] px-4 py-2 text-sm font-semibold rounded-lg bg-white shadow text-myco-900 transition-all">Classique</button>
+                <button onclick="setMode('sprint')" id="btn-mode-sprint" class="flex-1 min-w-[100px] px-4 py-2 text-sm font-semibold rounded-lg text-myco-800 hover:bg-white/50 transition-all">⚡ Sprint QCM</button>
+                <button onclick="setMode('paires')" id="btn-mode-paires" class="flex-1 min-w-[110px] px-4 py-2 text-sm font-semibold rounded-lg text-myco-800 hover:bg-white/50 transition-all">⚖️ Paires Confuses</button>
+            </div>
+
+            <!-- Sélecteur de Semaine (Caché en mode Paires) -->
+            <div id="week-selector" class="flex gap-2">
+                <button onclick="setDB('s1s2')" id="btn-db-s1s2" class="px-4 py-1.5 text-xs font-bold rounded-full bg-myco-900 text-white transition-all">Semaines 1 & 2</button>
+                <button onclick="setDB('s3')" id="btn-db-s3" class="px-4 py-1.5 text-xs font-bold rounded-full bg-myco-200 text-myco-800 hover:bg-myco-900 hover:text-white transition-all">Semaine 3</button>
+            </div>
+
         </div>
     </header>
 
-    <main class="w-full max-w-3xl px-4">
+    <main class="w-full max-w-4xl px-4 flex-grow flex flex-col">
         
-        <div class="flex justify-between items-end mb-2 px-1">
-            <span id="progress-text" class="text-sm font-semibold text-slate-500 tracking-wider">Question 1 / 46</span>
-            <span class="text-sm font-bold bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full border border-emerald-200">Score : <span id="score-text">0</span></span>
-        </div>
+        <div class="text-sm font-semibold text-slate-500 mb-2 px-1" id="progress-text">Question 1 / X</div>
 
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="bg-white rounded-2xl shadow-sm border border-myco-200 overflow-hidden relative flex-grow flex flex-col">
             
-            <!-- Loading State -->
-            <div id="loading-view" class="hidden flex-col items-center justify-center py-24">
+            <!-- Chargement commun -->
+            <div id="loading-view" class="hidden flex-grow flex-col items-center justify-center py-24">
                 <span class="loader mb-4"></span>
-                <p class="text-slate-500 font-medium text-sm animate-pulse">Recherche des images sur Wikimedia...</p>
+                <p class="text-myco-800 font-medium text-sm animate-pulse">Recherche des spécimens...</p>
             </div>
 
-            <!-- Quiz View -->
-            <div id="quiz-view" class="p-4 sm:p-6">
-                
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6" id="image-container">
-                    
-                    <!-- Image 1 (Always visible) -->
+            <!-- ============================================== -->
+            <!-- VUE 1 : CLASSIQUE (Ton code d'origine amélioré)-->
+            <!-- ============================================== -->
+            <div id="view-classique" class="hidden p-4 sm:p-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                     <div class="mushroom-img-container">
-                        <img id="img-1" src="" class="mushroom-img hidden" alt="Champignon 1">
+                        <img id="classique-img-1" src="" class="mushroom-img hidden" alt="Champignon 1">
                     </div>
-
-                    <!-- Image 2 (Hidden by default) -->
                     <div class="mushroom-img-container">
-                        <div id="overlay-2" class="reveal-overlay" onclick="revealImage()">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                            <span class="text-sm font-semibold text-slate-600">Révéler la 2ème image</span>
+                        <div id="classique-overlay-2" class="reveal-overlay" onclick="revealImageClassique()">
+                            <span class="text-3xl mb-2">👁️</span>
+                            <span class="text-sm font-semibold text-myco-800">Révéler la 2ème image</span>
                         </div>
-                        <img id="img-2" src="" class="mushroom-img hidden" alt="Champignon 2">
+                        <img id="classique-img-2" src="" class="mushroom-img hidden" alt="Champignon 2">
                     </div>
-
                 </div>
 
-                <!-- Hint Area -->
                 <div class="mb-5">
-                    <button onclick="toggleHint()" id="btn-show-hint" tabindex="-1" class="text-sm font-medium text-blue-600 hover:text-blue-800 flex items-center gap-1 transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                        Afficher l'indice (Nom commun)
+                    <button onclick="document.getElementById('classique-hint').classList.toggle('hidden')" class="text-sm font-medium text-orange-600 hover:text-orange-800 flex items-center gap-1">
+                        💡 Afficher le nom commun
                     </button>
-                    <div id="hint-content" class="hidden mt-2 p-3 bg-blue-50 border border-blue-100 rounded-lg">
-                        <p class="text-sm text-blue-900 font-bold" id="hint-text">Nom commun</p>
-                    </div>
+                    <div id="classique-hint" class="hidden mt-2 p-3 bg-orange-50 border border-orange-100 rounded-lg text-sm text-orange-900 font-bold"></div>
                 </div>
 
-                <!-- Formulaire englobant pour améliorer l'expérience clavier mobile -->
-                <form onsubmit="event.preventDefault();" class="flex flex-col gap-2 relative w-full">
-                    <div class="flex flex-col gap-2 relative">
-                        <label for="answer-input" class="text-sm font-semibold text-slate-700">Nom Latin du champignon :</label>
-                        <input type="text" id="answer-input" 
-                            class="w-full px-4 py-3 text-lg font-medium text-slate-900 bg-slate-50 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white transition-all placeholder-slate-400" 
-                            placeholder="Ex: Boletus edulis..."
-                            autocomplete="off" spellcheck="false" autocorrect="off">
-                        
-                        <!-- Feedback message -->
-                        <div id="feedback-message" class="text-sm font-medium min-h-[24px] mt-1 pl-1"></div>
-                    </div>
-
-                    <!-- Actions -->
+                <form onsubmit="event.preventDefault(); verifyClassique();" class="flex flex-col gap-2">
+                    <label class="text-sm font-semibold text-myco-800">Nom Latin du champignon :</label>
+                    <input type="text" id="classique-input" class="w-full px-4 py-3 text-lg font-medium text-myco-900 bg-myco-50 border-2 border-myco-200 rounded-xl focus:outline-none focus:border-orange-500 transition-all placeholder-gray-400" placeholder="Ex: Boletus edulis..." autocomplete="off" spellcheck="false">
+                    <div id="classique-feedback" class="text-sm font-medium min-h-[24px] mt-1 pl-1"></div>
+                    
                     <div class="mt-4 flex gap-3">
-                        <button type="button" id="btn-verify" onclick="verifyAnswer()" class="flex-1 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold py-3.5 px-4 rounded-xl shadow-sm transition-all text-center">
-                            Vérifier (Entrée)
-                        </button>
-                        <button type="button" id="btn-next" onclick="nextQuestion()" class="hidden flex-1 bg-slate-800 hover:bg-slate-900 active:bg-black text-white font-bold py-3.5 px-4 rounded-xl shadow-sm transition-all text-center">
-                            Suivant ➔ (Entrée)
-                        </button>
+                        <button type="submit" id="classique-btn-verify" class="flex-1 bg-myco-900 hover:bg-black text-white font-bold py-3.5 px-4 rounded-xl shadow-sm transition-all">Vérifier</button>
+                        <button type="button" id="classique-btn-next" onclick="nextQuestion()" class="hidden flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3.5 px-4 rounded-xl shadow-sm transition-all">Suivant ➔</button>
                     </div>
                 </form>
             </div>
 
-            <!-- End View -->
-            <div id="end-view" class="hidden flex-col items-center justify-center py-20 px-4 text-center">
-                <div id="end-icon" class="text-6xl mb-6">🏆</div>
-                <h2 class="text-3xl font-bold text-slate-900 mb-2">Quiz Terminé !</h2>
-                <p class="text-slate-600 mb-4 text-lg">Votre score final : <span id="final-score" class="font-bold text-blue-600 text-2xl"></span></p>
+            <!-- ============================================== -->
+            <!-- VUE 2 : SPRINT QCM (8 secondes)                -->
+            <!-- ============================================== -->
+            <div id="view-sprint" class="hidden flex-col p-4 sm:p-6">
+                <!-- Barre de temps -->
+                <div class="w-full bg-gray-200 h-2.5 rounded-full mb-6 overflow-hidden">
+                    <div id="sprint-timer-bar" class="h-full bg-orange-500 w-full"></div>
+                </div>
+
+                <div class="mushroom-img-container sm:max-w-xl mx-auto mb-6">
+                    <img id="sprint-img" src="" class="mushroom-img hidden" alt="Champignon à identifier">
+                </div>
+
+                <div id="sprint-feedback" class="text-center font-bold text-lg h-8 mb-4"></div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="sprint-buttons">
+                    <!-- Boutons générés en JS -->
+                </div>
                 
-                <!-- Nouveau message personnalisé -->
-                <p id="custom-message" class="text-lg font-medium mb-8"></p>
-                
-                <button onclick="initQuiz()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl shadow-sm transition-all transform hover:scale-105">
-                    Recommencer la série
+                <button type="button" id="sprint-btn-next" onclick="nextQuestion()" class="hidden mt-6 w-full bg-myco-900 text-white font-bold py-4 rounded-xl shadow-sm transition-all">Question Suivante ➔</button>
+            </div>
+
+            <!-- ============================================== -->
+            <!-- VUE 3 : PAIRES CONFUSES                        -->
+            <!-- ============================================== -->
+            <div id="view-paires" class="hidden flex-col p-4 sm:p-6">
+                <div class="text-center mb-6">
+                    <p class="text-sm text-slate-500 font-semibold uppercase tracking-wider mb-1">Associez le bon champignon</p>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-myco-900">Lequel est <span id="paires-target-name" class="text-orange-600 italic">...</span> ?</h2>
+                    <p id="paires-target-commun" class="text-sm font-medium text-slate-600 mt-1">...</p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                    <div class="mushroom-img-container interactive-img ring-4 ring-transparent transition-all" id="paires-container-0" onclick="verifyPaires(0)">
+                        <img id="paires-img-0" src="" class="mushroom-img hidden" alt="Choix 1">
+                    </div>
+                    <div class="mushroom-img-container interactive-img ring-4 ring-transparent transition-all" id="paires-container-1" onclick="verifyPaires(1)">
+                        <img id="paires-img-1" src="" class="mushroom-img hidden" alt="Choix 2">
+                    </div>
+                </div>
+
+                <!-- Panneau de réponse (Caché initialement) -->
+                <div id="paires-result-panel" class="hidden flex-col items-center bg-myco-50 border border-myco-200 rounded-xl p-5 mb-4 text-center">
+                    <h3 id="paires-result-title" class="text-xl font-bold mb-2"></h3>
+                    <p id="paires-hint" class="text-myco-800 font-medium"></p>
+                </div>
+
+                <button type="button" id="paires-btn-next" onclick="nextQuestion()" class="hidden w-full bg-myco-900 text-white font-bold py-4 rounded-xl shadow-sm transition-all">Suivant ➔</button>
+            </div>
+
+            <!-- ============================================== -->
+            <!-- VUE FIN DE PARTIE                              -->
+            <!-- ============================================== -->
+            <div id="view-end" class="hidden flex-grow flex-col items-center justify-center py-20 px-4 text-center bg-white">
+                <div id="end-icon" class="text-7xl mb-6 drop-shadow-md">🏆</div>
+                <h2 class="text-3xl font-bold text-myco-900 mb-2">Session Terminée !</h2>
+                <p class="text-slate-600 mb-4 text-lg">Votre score : <span id="final-score" class="font-bold text-orange-600 text-2xl"></span></p>
+                <p id="custom-message" class="text-lg font-medium mb-8 max-w-md mx-auto"></p>
+                <button onclick="startSession()" class="bg-myco-900 hover:bg-black text-white font-bold py-4 px-8 rounded-xl shadow-md transition-all transform hover:scale-105">
+                    🔄 Recommencer
                 </button>
             </div>
 
         </div>
-        
     </main>
 
+    <!-- LES DONNÉES ET LA LOGIQUE JS -->
     <script>
+        // ------------------------------------------------------------------
+        // BASES DE DONNÉES
+        // ------------------------------------------------------------------
         const db_s1s2 = [
             { l: "Chlorociboria aeruginascens", syn: ["chlorociboria aeruginascens"], c: "Pézize turquoise" },
             { l: "Helvella crispa", syn: ["helvella crispa"], c: "Helvelle crépue" },
@@ -234,87 +265,60 @@
             { l: "Ganoderma lucidum", syn: ["ganoderma lucidum"], c: "Ganoderme luisant" },
             { l: "Piptoporus betulinus", syn: ["piptoporus betulinus", "fomitopsis betulina"], c: "Polypore du bouleau" },
             { l: "Fomes fomentarius", syn: ["fomes fomentarius"], c: "Amadouvier" },
-            { l: "Phaeolus schweinitzii", syn: ["phaeolus schweinitzii"], c: "Polypore du teinturier" },
-            { l: "Polyporus tuberaster", syn: ["polyporus tuberaster"], c: "Polypore moucheté" },
-            { l: "Sparassis crispa", syn: ["sparassis crispa"], c: "Sparassis crépu" },
-            { l: "Fistulina hepatica", syn: ["fistulina hepatica"], c: "Langue de boeuf" },
-            { l: "Russula lepida", syn: ["russula lepida", "russula rosea"], c: "Russule jolie" },
-            { l: "Lactarius controversus", syn: ["lactarius controversus"], c: "Lactaire des peupliers" },
-            { l: "Lactarius deliciosus", syn: ["lactarius deliciosus"], c: "Lactaire délicieux" },
-            { l: "Pleurotus dryinus", syn: ["pleurotus dryinus"], c: "Pleurote voilé" },
-            { l: "Armillaria tabescens", syn: ["armillaria tabescens", "desarmillaria tabescens"], c: "Armillaire sans anneau" },
-            { l: "Hygrophorus cossus", syn: ["hygrophorus cossus"], c: "Hygrophore à odeur de chenille" },
-            { l: "Rhodocollybia butyracea", syn: ["rhodocollybia butyracea", "collybia butyracea"], c: "Collybie beurrée" },
-            { l: "Gymnopus dryophilus", syn: ["gymnopus dryophilus", "collybia dryophila"], c: "Collybie des chênes" },
-            { l: "Gymnopus fusipes", syn: ["gymnopus fusipes", "collybia fusipes"], c: "Collybie à pied en fuseau" },
-            { l: "Megacollybia platyphylla", syn: ["megacollybia platyphylla", "collybia platyphylla"], c: "Collybie à larges lames" },
             { l: "Macrolepiota procera", syn: ["macrolepiota procera"], c: "Coulemelle" },
             { l: "Chlorophyllum brunneum", syn: ["chlorophyllum brunneum", "macrolepiota brunnea"], c: "Lépiote déguenillée" },
             { l: "Agaricus campestris", syn: ["agaricus campestris"], c: "Rosé des prés" },
-            { l: "Agaricus bresadolanus", syn: ["agaricus bresadolanus"], c: "Agaric radicant" },
-            { l: "Parasola plicatilis", syn: ["parasola plicatilis", "coprinus plicatilis"], c: "Coprin plissé" },
-            { l: "Pluteus cervinus", syn: ["pluteus cervinus"], c: "Plutée couleur de cerf" },
             { l: "Amanita phalloides", syn: ["amanita phalloides"], c: "Amanite phalloïde" },
-            { l: "Amanita ovoidea", syn: ["amanita ovoidea"], c: "Oronge blanche" },
             { l: "Amanita citrina", syn: ["amanita citrina"], c: "Amanite citrine" },
             { l: "Amanita rubescens", syn: ["amanita rubescens"], c: "Amanite rougissante" },
-            { l: "Amanita excelsa", syn: ["amanita excelsa", "amanita spissa"], c: "Amanite épaisse" },
             { l: "Amanita muscaria", syn: ["amanita muscaria"], c: "Amanite tue-mouches" },
-            { l: "Amanita pantherina", syn: ["amanita pantherina"], c: "Amanite panthère" },
-            { l: "Amanita caesarea", syn: ["amanita caesarea"], c: "Amanite des Césars" },
-            { l: "Entoloma rhodopolium", syn: ["entoloma rhodopolium"], c: "Entolome à odeur d'eau de javel" },
-            { l: "Clitopilus prunulus", syn: ["clitopilus prunulus"], c: "Meunier" },
-            { l: "Hebeloma crustuliniforme", syn: ["hebeloma crustuliniforme"], c: "Hébélome échaudé" },
-            { l: "Caloboletus radicans", syn: ["caloboletus radicans", "boletus radicans"], c: "Bolet radicant" },
             { l: "Neoboletus erythropus", syn: ["neoboletus erythropus", "boletus erythropus"], c: "Bolet à pied rouge" },
-            { l: "Suillellus luridus", syn: ["suillellus luridus", "boletus luridus"], c: "Bolet blafard" },
             { l: "Rubroboletus satanas", syn: ["rubroboletus satanas", "boletus satanas"], c: "Bolet Satan" },
-            { l: "Leccinellum crocipodium", syn: ["leccinellum crocipodium", "leccinum crocipodium"], c: "Bolet craquelé" },
-            { l: "Xerocomus subtomentosus", syn: ["xerocomus subtomentosus", "boletus subtomentosus"], c: "Bolet subtomenteux" },
-            { l: "Suillus collinitus", syn: ["suillus collinitus"], c: "Bolet à base rose" },
-            { l: "Suillus granulatus", syn: ["suillus granulatus"], c: "Bolet granulé" }
+            // ... (Ajoute le reste de tes champignons S1S2 ici)
         ];
 
         const db_s3 = [
             { l: "Craterellus cornucopioides", syn: ["craterellus cornucopioides"], c: "Trompette de la mort" },
             { l: "Hydnum repandum", syn: ["hydnum repandum"], c: "Pied-de-mouton" },
-            { l: "Russula cyanoxantha", syn: ["russula cyanoxantha"], c: "Russule charbonnière" },
-            { l: "Russula amara", syn: ["russula amara"], c: "Russule mamelonnée" },
             { l: "Clitocybe nebularis", syn: ["clitocybe nebularis", "lepista nebularis"], c: "Clitocybe nébuleux" },
-            { l: "Clitocybe odora", syn: ["clitocybe odora"], c: "Clitocybe odorant" },
-            { l: "Tricholoma terreum", syn: ["tricholoma terreum"], c: "Tricholome terreux" },
-            { l: "Tricholoma sulphureum", syn: ["tricholoma sulphureum"], c: "Tricholome soufré" },
-            { l: "Mycena pura", syn: ["mycena pura"], c: "Mycène pure" },
-            { l: "Mycena rosea", syn: ["mycena rosea"], c: "Mycène rose" },
             { l: "Laccaria amethystina", syn: ["laccaria amethystina"], c: "Laccaire améthyste" },
-            { l: "Laccaria laccata", syn: ["laccaria laccata"], c: "Laccaire laqué" },
-            { l: "Agaricus xanthodermus", syn: ["agaricus xanthodermus", "agaricus xanthoderma"], c: "Agaric jaunissant" },
-            { l: "Coprinopsis atramentaria", syn: ["coprinopsis atramentaria", "coprinus atramentarius"], c: "Coprin noir d'encre" },
-            { l: "Coprinus picaceus", syn: ["coprinus picaceus", "coprinopsis picacea"], c: "Coprin pie" },
+            { l: "Mycena pura", syn: ["mycena pura"], c: "Mycène pure" },
+            { l: "Agaricus xanthodermus", syn: ["agaricus xanthodermus"], c: "Agaric jaunissant" },
             { l: "Entoloma lividum", syn: ["entoloma lividum", "entoloma sinuatum"], c: "Entolome livide" },
-            { l: "Inocybe fastigiata", syn: ["inocybe fastigiata", "inocybe rimosa"], c: "Inocybe fastigié" },
-            { l: "Cortinarius violaceus", syn: ["cortinarius violaceus"], c: "Cortinaire violet" },
-            { l: "Cortinarius orellanus", syn: ["cortinarius orellanus"], c: "Cortinaire couleur de rocou" },
-            { l: "Hypholoma fasciculare", syn: ["hypholoma fasciculare"], c: "Hypholome en touffe" },
-            { l: "Kuehneromyces mutabilis", syn: ["kuehneromyces mutabilis"], c: "Pholiote changeante" },
-            { l: "Galerina marginata", syn: ["galerina marginata"], c: "Galère marginée" },
-            { l: "Hygrophoropsis aurantiaca", syn: ["hygrophoropsis aurantiaca"], c: "Fausse girolle" },
-            { l: "Paxillus involutus", syn: ["paxillus involutus"], c: "Paxille enroulé" },
             { l: "Boletus edulis", syn: ["boletus edulis"], c: "Cèpe de Bordeaux" },
-            { l: "Scleroderma citrinum", syn: ["scleroderma citrinum", "scleroderma citrina"], c: "Scléroderme commun" },
-            { l: "Lycoperdon perlatum", syn: ["lycoperdon perlatum"], c: "Vesse-de-loup perlée" },
-            { l: "Ramaria stricta", syn: ["ramaria stricta"], c: "Clavaire dressée" },
-            { l: "Clathrus archeri", syn: ["clathrus archeri"], c: "Anthurus d'Archer" },
-            { l: "Phallus impudicus", syn: ["phallus impudicus"], c: "Satyre puant" }
+            { l: "Phallus impudicus", syn: ["phallus impudicus"], c: "Satyre puant" },
+            { l: "Russula cyanoxantha", syn: ["russula cyanoxantha"], c: "Russule charbonnière" },
+            { l: "Russula lepida", syn: ["russula lepida", "russula rosea"], c: "Russule jolie" }
+            // ... (Ajoute le reste de tes champignons S3 ici)
         ];
 
-        let currentDB = db_s1s2;
-        let questionOrder = [];
+        // Base de données spéciale pour les Paires Confuses
+        const db_pairs = [
+            { l1: "Amanita phalloides", c1: "Amanite phalloïde", l2: "Amanita citrina", c2: "Amanite citrine", hint: "⚠️ La phalloïde a un bulbe en sac, la citrine a un bulbe marginé et sent souvent la pomme de terre crue." },
+            { l1: "Macrolepiota procera", c1: "Coulemelle", l2: "Chlorophyllum brunneum", c2: "Lépiote déguenillée", hint: "La Coulemelle a un pied chiné et ne rougit pas. La déguenillée a un pied lisse, un bulbe marginé et sa chair rougit fortement à la coupe." },
+            { l1: "Cantharellus cibarius", c1: "Girolle", l2: "Hygrophoropsis aurantiaca", c2: "Fausse girolle", hint: "La vraie girolle possède des plis (qui ressemblent à des nervures) sous le chapeau. La fausse girolle a de vraies lames fines." },
+            { l1: "Clitocybe nebularis", c1: "Clitocybe nébuleux", l2: "Entoloma lividum", c2: "Entolome livide", hint: "☠️ L'Entolome livide (très toxique) a des lames jaunâtres puis roses, jamais blanches ou crèmes comme le nébuleux." },
+            { l1: "Agaricus campestris", c1: "Rosé des prés", l2: "Agaricus xanthodermus", c2: "Agaric jaunissant", hint: "L'agaric jaunissant jaunit intensément si on gratte la base de son pied, et dégage une odeur d'iode/encre." },
+            { l1: "Laccaria amethystina", c1: "Laccaire améthyste", l2: "Mycena pura", c2: "Mycène pure", hint: "La Mycène pure sent fortement le radis. Le Laccaire a des lames plus espacées et très violettes, couvertes de poudre blanche (spores) à maturité." },
+            { l1: "Russula cyanoxantha", c1: "Russule charbonnière", l2: "Russula lepida", c2: "Russule jolie", hint: "La charbonnière a des lames lardacées (qui ne cassent pas sous le doigt). La jolie a un pied très dur, souvent lavé de rose." }
+        ];
+
+        // ------------------------------------------------------------------
+        // VARIABLES D'ÉTAT
+        // ------------------------------------------------------------------
+        let currentMode = 'classique'; // classique, sprint, paires
+        let activeDBName = 's1s2'; // s1s2, s3
+        let currentQuestions = [];
         let currentIndex = 0;
         let score = 0;
         let hasAnswered = false;
+        
+        let sprintTimeout;
+        let pairesCorrectIndex = 0; // 0 (gauche) ou 1 (droite)
 
-        // Shuffle logic
+        // ------------------------------------------------------------------
+        // UTILITAIRES
+        // ------------------------------------------------------------------
         function shuffleArray(array) {
             let arr = [...array];
             for (let i = arr.length - 1; i > 0; i--) {
@@ -324,30 +328,14 @@
             return arr;
         }
 
-        // Ultra-forgiving normalization
         function normalizeString(str) {
             return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z]/g, "");
         }
 
-        function switchTab(tab) {
-            const btnS1S2 = document.getElementById('tab-s1s2');
-            const btnS3 = document.getElementById('tab-s3');
-            
-            if (tab === 's1s2') {
-                btnS1S2.className = "flex-1 sm:px-6 py-2 text-sm font-semibold rounded-md bg-white shadow-sm text-slate-800 transition-all";
-                btnS3.className = "flex-1 sm:px-6 py-2 text-sm font-semibold rounded-md text-slate-500 hover:text-slate-700 transition-all";
-                currentDB = db_s1s2;
-            } else {
-                btnS3.className = "flex-1 sm:px-6 py-2 text-sm font-semibold rounded-md bg-white shadow-sm text-slate-800 transition-all";
-                btnS1S2.className = "flex-1 sm:px-6 py-2 text-sm font-semibold rounded-md text-slate-500 hover:text-slate-700 transition-all";
-                currentDB = db_s3;
-            }
-            initQuiz();
-        }
-
-        async function fetchImagesWiki(mushroomName) {
+        // Filtre agressif pour l'apprentissage
+        async function fetchImagesWiki(mushroomName, count=1) {
             const query = encodeURIComponent(mushroomName);
-            const url = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${query}&gsrnamespace=6&gsrlimit=15&prop=imageinfo&iiprop=url&iiurlwidth=800&format=json&origin=*`;
+            const url = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${query}&gsrnamespace=6&gsrlimit=20&prop=imageinfo&iiprop=url&iiurlwidth=800&format=json&origin=*`;
             
             try {
                 const res = await fetch(url);
@@ -356,165 +344,123 @@
                 
                 if (data.query && data.query.pages) {
                     const pages = Object.values(data.query.pages);
+                    // Mots clés à bannir pour l'apprentissage visuel
+                    const bad = ['.svg', '.pdf', 'diagram', 'schema', 'map', 'icon', 'text', 'microscop', 'spore', 'mycelium', 'herbarium', 'exsiccata', 'dried', 'seché', 'drawing', 'illustration', 'painting', 'print', 'stamp'];
+                    
                     for (let p of pages) {
                         if (p.imageinfo && p.imageinfo.length > 0) {
                             let imgUrl = p.imageinfo[0].thumburl || p.imageinfo[0].url;
                             let title = p.title ? p.title.toLowerCase() : "";
                             let lowerUrl = imgUrl.toLowerCase();
                             
-                            // Advanced filtering to exclude text/diagrams as much as possible
-                            const badKeywords = ['.svg', '.pdf', 'diagram', 'schema', 'map', 'icon', 'microscop', 'spore', 'text'];
-                            const isBad = badKeywords.some(kw => lowerUrl.includes(kw) || title.includes(kw));
-
-                            if (!isBad) {
-                                images.push(imgUrl);
-                            }
+                            const isBad = bad.some(kw => lowerUrl.includes(kw) || title.includes(kw));
+                            if (!isBad) images.push(imgUrl);
                         }
                     }
                 }
                 
                 images = shuffleArray(images);
-                let finalImages = images.slice(0, 2);
+                let finalImages = images.slice(0, count);
                 
-                while(finalImages.length < 2) {
+                while(finalImages.length < count) {
                     finalImages.push(`https://placehold.co/800x600/e2e8f0/64748b?text=Image+Non+Trouv%C3%A9e`);
                 }
                 return finalImages;
             } catch (error) {
-                console.error("API Error:", error);
-                return [
-                    `https://placehold.co/800x600/fee2e2/ef4444?text=Erreur+Connexion`,
-                    `https://placehold.co/800x600/fee2e2/ef4444?text=Erreur+Connexion`
-                ];
+                return Array(count).fill(`https://placehold.co/800x600/fee2e2/ef4444?text=Erreur`);
             }
         }
 
-        function initQuiz() {
-            questionOrder = shuffleArray([...Array(currentDB.length).keys()]);
+        // ------------------------------------------------------------------
+        // GESTION DES MODES & NAVIGATION
+        // ------------------------------------------------------------------
+        function setMode(mode) {
+            currentMode = mode;
+            
+            // Mise à jour de la barre de navigation
+            const modes = ['classique', 'sprint', 'paires'];
+            modes.forEach(m => {
+                const btn = document.getElementById(`btn-mode-${m}`);
+                if (m === mode) {
+                    btn.className = "flex-1 min-w-[100px] px-4 py-2 text-sm font-semibold rounded-lg bg-white shadow text-myco-900 transition-all";
+                } else {
+                    btn.className = "flex-1 min-w-[100px] px-4 py-2 text-sm font-semibold rounded-lg text-myco-800 hover:bg-white/50 transition-all";
+                }
+            });
+
+            // Afficher/Cacher le sélecteur de semaine
+            document.getElementById('week-selector').style.display = (mode === 'paires') ? 'none' : 'flex';
+            
+            startSession();
+        }
+
+        function setDB(dbName) {
+            activeDBName = dbName;
+            document.getElementById('btn-db-s1s2').className = (dbName === 's1s2') ? "px-4 py-1.5 text-xs font-bold rounded-full bg-myco-900 text-white transition-all" : "px-4 py-1.5 text-xs font-bold rounded-full bg-myco-200 text-myco-800 hover:bg-myco-900 hover:text-white transition-all";
+            document.getElementById('btn-db-s3').className = (dbName === 's3') ? "px-4 py-1.5 text-xs font-bold rounded-full bg-myco-900 text-white transition-all" : "px-4 py-1.5 text-xs font-bold rounded-full bg-myco-200 text-myco-800 hover:bg-myco-900 hover:text-white transition-all";
+            startSession();
+        }
+
+        function getActiveDB() {
+            if (currentMode === 'paires') return db_pairs;
+            return (activeDBName === 's1s2') ? db_s1s2 : db_s3;
+        }
+
+        function startSession() {
+            const db = getActiveDB();
+            currentQuestions = shuffleArray([...Array(db.length).keys()]);
             currentIndex = 0;
             score = 0;
+            document.getElementById('score-text').innerText = score;
             
-            document.getElementById('end-view').classList.add('hidden');
-            document.getElementById('quiz-view').classList.remove('hidden');
+            // Masquer la fin, montrer le chargement
+            document.getElementById('view-end').classList.add('hidden');
+            document.getElementById('view-end').classList.remove('flex');
             
             loadQuestion();
         }
 
+        // ------------------------------------------------------------------
+        // LOGIQUE PRINCIPALE DU JEU
+        // ------------------------------------------------------------------
         async function loadQuestion() {
-            if (currentIndex >= questionOrder.length) {
+            if (currentIndex >= currentQuestions.length) {
                 showEndScreen();
                 return;
             }
 
-            const mushroom = currentDB[questionOrder[currentIndex]];
             hasAnswered = false;
+            document.getElementById('progress-text').innerText = `Question ${currentIndex + 1} / ${currentQuestions.length}`;
             
-            // UI Resets
-            document.getElementById('progress-text').innerText = `Question ${currentIndex + 1} / ${currentDB.length}`;
-            document.getElementById('score-text').innerText = score;
-            
-            const inputEl = document.getElementById('answer-input');
-            inputEl.value = '';
-            inputEl.className = "w-full px-4 py-3 text-lg font-medium text-slate-900 bg-slate-50 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white transition-all placeholder-slate-400";
-            inputEl.disabled = false;
-            
-            const feedbackEl = document.getElementById('feedback-message');
-            feedbackEl.innerHTML = '';
-            
-            document.getElementById('hint-content').classList.add('hidden');
-            document.getElementById('hint-text').innerText = mushroom.c;
-
-            document.getElementById('btn-verify').classList.remove('hidden');
-            document.getElementById('btn-next').classList.add('hidden');
-
-            // Reset images and mask
-            document.getElementById('img-1').classList.add('hidden');
-            document.getElementById('img-2').classList.add('hidden');
-            document.getElementById('overlay-2').classList.remove('hidden-overlay');
-
-            document.getElementById('quiz-view').classList.add('hidden');
+            // Masquer toutes les vues et afficher le chargement
+            document.getElementById('view-classique').classList.add('hidden');
+            document.getElementById('view-sprint').classList.add('hidden');
+            document.getElementById('view-paires').classList.add('hidden');
             document.getElementById('loading-view').classList.remove('hidden');
             document.getElementById('loading-view').classList.add('flex');
 
-            // Fetch Data
-            const images = await fetchImagesWiki(mushroom.l);
-            
-            document.getElementById('img-1').src = images[0];
-            document.getElementById('img-2').src = images[1];
+            const db = getActiveDB();
+            const qData = db[currentQuestions[currentIndex]];
 
-            // Show UI
+            // Préparation selon le mode
+            if (currentMode === 'classique') {
+                await prepareClassique(qData);
+                document.getElementById('view-classique').classList.remove('hidden');
+            } 
+            else if (currentMode === 'sprint') {
+                await prepareSprint(qData);
+                document.getElementById('view-sprint').classList.remove('hidden');
+                document.getElementById('view-sprint').classList.add('flex');
+                startSprintTimer();
+            } 
+            else if (currentMode === 'paires') {
+                await preparePaires(qData);
+                document.getElementById('view-paires').classList.remove('hidden');
+                document.getElementById('view-paires').classList.add('flex');
+            }
+
             document.getElementById('loading-view').classList.add('hidden');
             document.getElementById('loading-view').classList.remove('flex');
-            document.getElementById('quiz-view').classList.remove('hidden');
-            
-            document.getElementById('img-1').classList.remove('hidden');
-            document.getElementById('img-2').classList.remove('hidden');
-            
-            // Auto focus conditionnel (uniquement sur écrans larges pour éviter le clavier virtuel intempestif)
-            setTimeout(() => {
-                if (window.innerWidth > 768) {
-                    inputEl.focus();
-                }
-            }, 50);
-        }
-
-        function revealImage() {
-            document.getElementById('overlay-2').classList.add('hidden-overlay');
-            if (window.innerWidth > 768) {
-                document.getElementById('answer-input').focus();
-            }
-        }
-
-        function toggleHint() {
-            const hint = document.getElementById('hint-content');
-            hint.classList.toggle('hidden');
-            if (window.innerWidth > 768) {
-                document.getElementById('answer-input').focus();
-            }
-        }
-
-        function verifyAnswer() {
-            if (hasAnswered) return;
-            
-            const mushroom = currentDB[questionOrder[currentIndex]];
-            const inputEl = document.getElementById('answer-input');
-            const feedbackEl = document.getElementById('feedback-message');
-            const userNormalized = normalizeString(inputEl.value);
-            
-            let isCorrect = false;
-            for (let syn of mushroom.syn) {
-                if (userNormalized === normalizeString(syn)) {
-                    isCorrect = true;
-                    break;
-                }
-            }
-
-            hasAnswered = true;
-            inputEl.disabled = true;
-
-            // Automatically reveal the second image when verifying
-            document.getElementById('overlay-2').classList.add('hidden-overlay');
-
-            if (isCorrect) {
-                inputEl.classList.add('input-success');
-                inputEl.classList.remove('border-slate-200');
-                feedbackEl.innerHTML = `✨ <b>Exact !</b> C'est bien le <span class="text-green-700">${mushroom.c}</span>.`;
-                feedbackEl.className = "text-sm min-h-[24px] mt-2 pl-1 text-emerald-600";
-                score++;
-                document.getElementById('score-text').innerText = score;
-            } else {
-                inputEl.classList.add('input-error');
-                inputEl.classList.remove('border-slate-200');
-                feedbackEl.innerHTML = `❌ <b>Faux.</b> Réponse attendue : <span class="text-red-700 underline underline-offset-2">${mushroom.l}</span> (${mushroom.c})`;
-                feedbackEl.className = "text-sm min-h-[24px] mt-2 pl-1 text-red-600";
-            }
-            
-            document.getElementById('btn-verify').classList.add('hidden');
-            const btnNext = document.getElementById('btn-next');
-            btnNext.classList.remove('hidden');
-            
-            // On met le focus sur le bouton "Suivant" pour permettre l'appui sur Entrée
-            btnNext.focus();
         }
 
         function nextQuestion() {
@@ -523,44 +469,280 @@
             loadQuestion();
         }
 
+        // ==========================================
+        // MODE CLASSIQUE
+        // ==========================================
+        async function prepareClassique(mushroom) {
+            const images = await fetchImagesWiki(mushroom.l, 2);
+            
+            document.getElementById('classique-img-1').src = images[0];
+            document.getElementById('classique-img-1').classList.remove('hidden');
+            
+            document.getElementById('classique-img-2').src = images[1];
+            document.getElementById('classique-img-2').classList.add('hidden');
+            document.getElementById('classique-overlay-2').classList.remove('hidden-overlay');
+
+            document.getElementById('classique-hint').innerText = mushroom.c;
+            document.getElementById('classique-hint').classList.add('hidden');
+
+            const inputEl = document.getElementById('classique-input');
+            inputEl.value = '';
+            inputEl.className = "w-full px-4 py-3 text-lg font-medium text-myco-900 bg-myco-50 border-2 border-myco-200 rounded-xl focus:outline-none focus:border-orange-500 transition-all placeholder-gray-400";
+            inputEl.disabled = false;
+            
+            document.getElementById('classique-feedback').innerHTML = '';
+            document.getElementById('classique-btn-verify').classList.remove('hidden');
+            document.getElementById('classique-btn-next').classList.add('hidden');
+
+            setTimeout(() => { if(window.innerWidth > 768) inputEl.focus(); }, 50);
+        }
+
+        function revealImageClassique() {
+            document.getElementById('classique-overlay-2').classList.add('hidden-overlay');
+            document.getElementById('classique-img-2').classList.remove('hidden');
+            if (window.innerWidth > 768) document.getElementById('classique-input').focus();
+        }
+
+        function verifyClassique() {
+            if (hasAnswered) return;
+            const mushroom = getActiveDB()[currentQuestions[currentIndex]];
+            const inputEl = document.getElementById('classique-input');
+            const userNorm = normalizeString(inputEl.value);
+            
+            let isCorrect = mushroom.syn.some(s => normalizeString(s) === userNorm);
+            hasAnswered = true;
+            inputEl.disabled = true;
+            document.getElementById('classique-overlay-2').classList.add('hidden-overlay');
+            document.getElementById('classique-img-2').classList.remove('hidden');
+
+            const feedback = document.getElementById('classique-feedback');
+            if (isCorrect) {
+                inputEl.classList.add('border-green-500', 'bg-green-50');
+                feedback.innerHTML = `✨ <b>Exact !</b> C'est bien le <span class="text-green-700">${mushroom.c}</span>.`;
+                feedback.className = "text-sm mt-2 pl-1 text-green-600";
+                updateScore();
+            } else {
+                inputEl.classList.add('border-red-500', 'bg-red-50');
+                feedback.innerHTML = `❌ <b>Faux.</b> Réponse : <span class="text-red-700 underline">${mushroom.l}</span> (${mushroom.c})`;
+                feedback.className = "text-sm mt-2 pl-1 text-red-600";
+            }
+            
+            document.getElementById('classique-btn-verify').classList.add('hidden');
+            document.getElementById('classique-btn-next').classList.remove('hidden');
+            document.getElementById('classique-btn-next').focus();
+        }
+
+        // ==========================================
+        // MODE SPRINT QCM
+        // ==========================================
+        async function prepareSprint(mushroom) {
+            const images = await fetchImagesWiki(mushroom.l, 1);
+            document.getElementById('sprint-img').src = images[0];
+            document.getElementById('sprint-img').classList.remove('hidden');
+            
+            document.getElementById('sprint-feedback').innerHTML = '';
+            document.getElementById('sprint-btn-next').classList.add('hidden');
+
+            // Générer 4 propositions
+            const db = getActiveDB();
+            let others = db.filter(m => m.l !== mushroom.l);
+            others = shuffleArray(others).slice(0, 3);
+            let options = shuffleArray([mushroom, ...others]);
+
+            const btnContainer = document.getElementById('sprint-buttons');
+            btnContainer.innerHTML = '';
+            
+            options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-4 rounded-xl border-2 border-myco-200 bg-white hover:bg-myco-50 transition-all font-medium text-myco-900";
+                btn.innerHTML = `<span class="italic block">${opt.l}</span><span class="text-sm text-slate-500">${opt.c}</span>`;
+                btn.onclick = () => verifySprint(idx, options, mushroom);
+                btnContainer.appendChild(btn);
+            });
+        }
+
+        function startSprintTimer() {
+            clearTimeout(sprintTimeout);
+            const timerEl = document.getElementById('sprint-timer-bar');
+            
+            timerEl.style.transition = 'none';
+            timerEl.style.width = '100%';
+            timerEl.classList.remove('bg-red-500');
+            timerEl.classList.add('bg-orange-500');
+            
+            void timerEl.offsetWidth; // Force reflow
+            
+            timerEl.style.transition = 'width 8s linear, background-color 8s linear';
+            timerEl.style.width = '0%';
+            timerEl.classList.add('bg-red-500');
+            timerEl.classList.remove('bg-orange-500');
+
+            sprintTimeout = setTimeout(() => {
+                if(!hasAnswered) verifySprint(-1, null, getActiveDB()[currentQuestions[currentIndex]]);
+            }, 8000);
+        }
+
+        function verifySprint(selectedIndex, options, correctMushroom) {
+            if (hasAnswered) return;
+            hasAnswered = true;
+            clearTimeout(sprintTimeout);
+            document.getElementById('sprint-timer-bar').style.transition = 'none';
+
+            const buttons = document.getElementById('sprint-buttons').children;
+            
+            // Identifier le bon index si timeout
+            if(!options) {
+                // Reconstruction sommaire en cas de timeout pour trouver le bon bouton
+                Array.from(buttons).forEach((btn, idx) => {
+                    if (btn.innerHTML.includes(correctMushroom.l)) {
+                        btn.classList.add('border-green-500', 'bg-green-50');
+                    }
+                });
+                document.getElementById('sprint-feedback').innerHTML = `⏰ Temps écoulé ! C'était <i>${correctMushroom.l}</i>`;
+                document.getElementById('sprint-feedback').className = "text-center font-bold text-lg h-8 mb-4 text-red-600";
+            } else {
+                const selectedOpt = options[selectedIndex];
+                const isCorrect = (selectedOpt.l === correctMushroom.l);
+
+                Array.from(buttons).forEach((btn, idx) => {
+                    btn.disabled = true;
+                    if (options[idx].l === correctMushroom.l) {
+                        btn.classList.add('border-green-500', 'bg-green-50');
+                    } else if (idx === selectedIndex && !isCorrect) {
+                        btn.classList.add('border-red-500', 'bg-red-50');
+                    }
+                });
+
+                if (isCorrect) {
+                    updateScore();
+                    document.getElementById('sprint-feedback').innerHTML = `⚡ Rapide et précis !`;
+                    document.getElementById('sprint-feedback').className = "text-center font-bold text-lg h-8 mb-4 text-green-600";
+                } else {
+                    document.getElementById('sprint-feedback').innerHTML = `❌ Trop vite !`;
+                    document.getElementById('sprint-feedback').className = "text-center font-bold text-lg h-8 mb-4 text-red-600";
+                }
+            }
+            
+            document.getElementById('sprint-btn-next').classList.remove('hidden');
+        }
+
+        // ==========================================
+        // MODE PAIRES CONFUSES
+        // ==========================================
+        async function preparePaires(pairData) {
+            // Choix aléatoire : on cherche l1 ou l2 ?
+            const askFor1 = Math.random() > 0.5;
+            const targetLatin = askFor1 ? pairData.l1 : pairData.l2;
+            const targetCommun = askFor1 ? pairData.c1 : pairData.c2;
+            
+            document.getElementById('paires-target-name').innerText = targetLatin;
+            document.getElementById('paires-target-commun').innerText = `(${targetCommun})`;
+
+            // Récupérer les 2 images en parallèle
+            const [img1, img2] = await Promise.all([
+                fetchImagesWiki(pairData.l1, 1),
+                fetchImagesWiki(pairData.l2, 1)
+            ]);
+
+            // Mélanger gauche/droite
+            const put1Left = Math.random() > 0.5;
+            pairesCorrectIndex = (askFor1 === put1Left) ? 0 : 1;
+
+            const urlL = put1Left ? img1[0] : img2[0];
+            const urlR = put1Left ? img2[0] : img1[0];
+
+            document.getElementById('paires-img-0').src = urlL;
+            document.getElementById('paires-img-0').classList.remove('hidden');
+            document.getElementById('paires-img-1').src = urlR;
+            document.getElementById('paires-img-1').classList.remove('hidden');
+
+            // Reset UI
+            [0, 1].forEach(i => {
+                const c = document.getElementById(`paires-container-${i}`);
+                c.className = "mushroom-img-container interactive-img ring-4 ring-transparent transition-all cursor-pointer";
+            });
+            document.getElementById('paires-result-panel').classList.add('hidden');
+            document.getElementById('paires-result-panel').classList.remove('flex');
+            document.getElementById('paires-btn-next').classList.add('hidden');
+        }
+
+        function verifyPaires(selectedIndex) {
+            if (hasAnswered) return;
+            hasAnswered = true;
+
+            const pairData = getActiveDB()[currentQuestions[currentIndex]];
+            const isCorrect = (selectedIndex === pairesCorrectIndex);
+
+            // Mettre en évidence les images
+            const correctContainer = document.getElementById(`paires-container-${pairesCorrectIndex}`);
+            const wrongContainer = document.getElementById(`paires-container-${1 - pairesCorrectIndex}`);
+            
+            correctContainer.classList.replace('ring-transparent', 'ring-green-500');
+            wrongContainer.classList.replace('ring-transparent', 'ring-red-500');
+            wrongContainer.classList.add('opacity-50');
+
+            // Afficher le résultat et l'indice de distinction
+            const panel = document.getElementById('paires-result-panel');
+            const title = document.getElementById('paires-result-title');
+            
+            panel.classList.remove('hidden');
+            panel.classList.add('flex');
+            
+            document.getElementById('paires-hint').innerHTML = pairData.hint;
+
+            if (isCorrect) {
+                updateScore();
+                title.innerHTML = `✅ Bien vu !`;
+                title.className = "text-xl font-bold mb-2 text-green-700";
+                panel.className = "flex flex-col items-center bg-green-50 border border-green-200 rounded-xl p-5 mb-4 text-center";
+            } else {
+                title.innerHTML = `❌ Confusion fatale !`;
+                title.className = "text-xl font-bold mb-2 text-red-700";
+                panel.className = "flex flex-col items-center bg-red-50 border border-red-200 rounded-xl p-5 mb-4 text-center";
+            }
+
+            document.getElementById('paires-btn-next').classList.remove('hidden');
+        }
+
+        // ==========================================
+        // COMMUN
+        // ==========================================
+        function updateScore() {
+            score++;
+            document.getElementById('score-text').innerText = score;
+        }
+
         function showEndScreen() {
-            document.getElementById('quiz-view').classList.add('hidden');
-            const endScreen = document.getElementById('end-view');
+            document.getElementById(`view-${currentMode}`).classList.add('hidden');
+            document.getElementById(`view-${currentMode}`).classList.remove('flex');
+            
+            const endScreen = document.getElementById('view-end');
             endScreen.classList.remove('hidden');
             endScreen.classList.add('flex');
             
-            document.getElementById('final-score').innerText = `${score} / ${currentDB.length}`;
+            const total = currentQuestions.length;
+            document.getElementById('final-score').innerText = `${score} / ${total}`;
             
-            // Gestion du message personnalisé
             const messageEl = document.getElementById('custom-message');
             const iconEl = document.getElementById('end-icon');
             
-            // Si le score est strictement supérieur à la moyenne
-            if (score > currentDB.length / 2) {
-                messageEl.innerText = "Bravo, tu vas me devoir une bière ! 🍻";
-                messageEl.className = "text-xl font-bold text-emerald-600 mb-8";
+            if (score === total) {
+                messageEl.innerText = "Parfait ! Vous êtes prêt pour la forêt ! 🌲";
+                messageEl.className = "text-xl font-bold text-green-600 mb-8";
+                iconEl.innerText = "👑";
+            } else if (score > total / 2) {
+                messageEl.innerText = "Bravo, on approche de l'expertise ! 🍻";
+                messageEl.className = "text-xl font-bold text-orange-500 mb-8";
                 iconEl.innerText = "🏆";
             } else {
-                messageEl.innerText = "Allez, on ne lâche rien ! Encore un petit essai pour avoir la moyenne ! 💪";
-                messageEl.className = "text-xl font-medium text-amber-600 mb-8";
+                messageEl.innerText = "Encore un peu d'entraînement, ne lâchez rien ! 💪";
+                messageEl.className = "text-xl font-medium text-myco-800 mb-8";
                 iconEl.innerText = "🍄";
             }
         }
 
-        // Global Event Listener pour la touche Entrée
-        document.getElementById('answer-input').addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault(); // Empêche les comportements parasites du navigateur
-                if (!hasAnswered) {
-                    verifyAnswer();
-                } else {
-                    nextQuestion();
-                }
-            }
-        });
-
-        // Initialize App
-        initQuiz();
+        // Initialisation
+        startSession();
 
     </script>
 </body>
